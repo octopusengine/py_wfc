@@ -4,29 +4,30 @@ import yaml
 import os
 import datetime
 
-__version__ = "0.1" # 25/01
+__version__ = "0.12"  # 25/02
 
-# 🛠 Constants
-TILE_SIZE = 64  # Tile size in pixels
-GRID_SIZE = 8    # Grid dimensions (8x8)
+# Constants
+TILE_SIZE = 32  # Tile size in pixels | 16, 32, 64
+GRID_SIZE = 32  # Grid dimensions GRID_SIZE x GRID_SIZE | 8, 16, 32, 64, 128
 WIDTH, HEIGHT = GRID_SIZE * TILE_SIZE, GRID_SIZE * TILE_SIZE
-DELAY = 100  # Delay in milliseconds (100ms)
+DELAY = 10  # Delay in milliseconds (100ms)
+RULES_FILE = "rules2.yaml"
 
-# 🖥 Initialize Pygame
+# Initialize Pygame
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Wave Function Collapse")
 
-# 📂 Load tiles from the "src/" folder
-TILE_FOLDER = "src"
+# Load tiles from the "src2/" folder
+TILE_FOLDER = "src2"
 TILE_NAMES = sorted([f for f in os.listdir(TILE_FOLDER) if f.endswith(".png")])
 
 # Debug: Verify the number of tiles
-print(f"\n📂 Loaded tiles: {len(TILE_NAMES)} PNG files.")
+print(f"\nLoaded tiles: {len(TILE_NAMES)} PNG files.")
 if len(TILE_NAMES) < 9:
-    print("⚠️ Warning: At least 9 tiles are expected!")
+    print("Warning: At least 9 tiles are expected!")
 
-# 🖼 Load and scale tiles
+# Load and scale tiles
 tiles = {}
 for i, name in enumerate(TILE_NAMES):
     try:
@@ -35,25 +36,33 @@ for i, name in enumerate(TILE_NAMES):
         img = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE))  # Resize to TILE_SIZE
         tiles[i] = img
     except Exception as e:
-        print(f"\n🚨 Error loading `{name}`: {e}")
+        print(f"\nError loading `{name}`: {e}")
 
-# 📜 Load connectivity rules from YAML file
+# Load connectivity rules from YAML file
 def load_connectivity(yaml_file):
     with open(yaml_file, "r") as file:
         return yaml.safe_load(file)
 
-CONNECTIVITY = load_connectivity("rules.yaml")
+CONNECTIVITY = load_connectivity(RULES_FILE)
 
-# 🏗 Initialize grid with all possible tiles
+# Initialize grid with all possible tiles
 grid = [[list(range(len(tiles))) for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
 
-# 🔽 Function to collapse a tile
+# Function to preset a tile at a specific position before collapse
+def preset(x, y, index):
+    """Sets a fixed tile at position (x, y) before the collapse starts."""
+    if 0 <= x < GRID_SIZE and 0 <= y < GRID_SIZE and index in tiles:
+        grid[y][x] = [index]
+        update_constraints()  # Apply constraints immediately
+        print(f"Preset tile {index} at position ({x}, {y})")
+
+# Function to collapse a tile
 def collapse_tile(x, y):
     """Randomly selects one tile based on available options."""
     if len(grid[y][x]) > 1:
         grid[y][x] = [random.choice(grid[y][x])]
 
-# 🔄 Update constraints based on connectivity rules
+# Update constraints based on connectivity rules
 def update_constraints():
     """Propagates adjacency constraints across the grid."""
     for y in range(GRID_SIZE):
@@ -77,7 +86,7 @@ def update_constraints():
                 if x < GRID_SIZE - 1:
                     grid[y][x + 1] = [t for t in grid[y][x + 1] if t in CONNECTIVITY[tile]["right"]]
 
-# 🎨 Function to draw the current state of the grid
+# Function to draw the current state of the grid
 def draw_grid():
     """Draws the current state of the grid on the screen."""
     screen.fill((50, 50, 50))  # Gray background
@@ -88,14 +97,14 @@ def draw_grid():
                 screen.blit(tile, (x * TILE_SIZE, y * TILE_SIZE))
     pygame.display.flip()
 
-# 🏗 Wave Function Collapse algorithm
+# Wave Function Collapse algorithm
 def collapse_grid():
     """Performs the Wave Function Collapse algorithm step by step."""
     for _ in range(GRID_SIZE * GRID_SIZE):
         possible_cells = [(x, y) for y in range(GRID_SIZE) for x in range(GRID_SIZE) if len(grid[y][x]) > 1]
         
         if not possible_cells:
-            print("\n✅ [INFO] All cells have collapsed!")
+            print("\n[INFO] All cells have collapsed!")
             return
 
         min_entropy = min(len(grid[y][x]) for x, y in possible_cells)
@@ -105,34 +114,37 @@ def collapse_grid():
         collapse_tile(x, y)
         update_constraints()
         
-        # 🔄 Draw the current state after each step
+        # Draw the current state after each step
         draw_grid()
         pygame.time.delay(DELAY)
 
-# ▶ Run the collapse algorithm
+# Example usage of the preset function before running the algorithm
+"""
+preset(0, 0, 21)
+preset(GRID_SIZE-1, GRID_SIZE-1, 21)
+"""
+
+# Run the collapse algorithm
 collapse_grid()
 
-# 📂 Save the final generated image
+# Save the final generated image
 def save_final_image():
     """Saves the final generated grid as a PNG image in the 'output/' folder with a timestamp."""
-    # 📂 Create 'output' folder if it doesn't exist
     output_folder = "output"
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    # ⏳ Generate timestamp in the format "RRMMDD_HHmm"
     timestamp = datetime.datetime.now().strftime("%y%m%d_%H%M")
     filename = f"wfc_{timestamp}.png"
     output_path = os.path.join(output_folder, filename)
 
-    # 📸 Save the Pygame screen as an image
     pygame.image.save(screen, output_path)
-    print(f"\n✅ [INFO] Final image saved as `{output_path}`!")
+    print(f"\n[INFO] Final image saved as `{output_path}`!")
 
-# 💾 Save the result before exiting
+# Save the result before exiting
 save_final_image()
 
-# 🎨 Main loop (to keep the window open)
+# Keep the window open
 running = True
 while running:
     for event in pygame.event.get():
