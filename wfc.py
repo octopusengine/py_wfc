@@ -122,12 +122,24 @@ def collapse_grid():
 """
 preset(0, 0, 21)
 preset(GRID_SIZE-1, GRID_SIZE-1, 21)
+
+for yy in range(GRID_SIZE):
+    preset(yy, int(GRID_SIZE/2), 0)
+
+for yy in range(GRID_SIZE):
+    preset(int(GRID_SIZE/2), yy, 21)
+
+for yy in range(GRID_SIZE):
+    preset(yy, 0, 0)
+
+for yy in range(GRID_SIZE):
+    preset(0, yy, 21)
 """
 
-# Run the collapse algorithm
-collapse_grid()
 
-# Save the final generated image
+collapse_grid() # Run the collapse algorithm
+
+
 def save_final_image():
     """Saves the final generated grid as a PNG image in the 'output/' folder with a timestamp."""
     output_folder = "output"
@@ -141,8 +153,8 @@ def save_final_image():
     pygame.image.save(screen, output_path)
     print(f"\n[INFO] Final image saved as `{output_path}`!")
 
-# Save the result before exiting
-save_final_image()
+
+save_final_image() # Save the result before exiting
 
 # Keep the window open
 running = True
