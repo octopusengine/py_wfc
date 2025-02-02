@@ -16,4 +16,12 @@ A Python implementation of the Wave Function Collapse (WFC) algorithm with thres
 ## Usage
 Load an input pattern from an image or a predefined tile set, define constraints, and generate new procedural structures with controlled randomness.
 
-![output example](output/wfc_250201_32x32.png)
+![output example2](output/wfc_250201_32x32.png)
+
+.:.:.
+
+![output example3](output/wfc3_15_64.png)
+
+
+
+
