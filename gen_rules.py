@@ -7,17 +7,18 @@ import time
 
 __version__ = "0.3.0"  # 25/02
 
-RULES_FILE = "rules3"
-TILE_FOLDER = "src3"  # Directory containing tile images
+TILE_FOLDER = "src_city"  # Directory containing tile images
+RULES_FILE = TILE_FOLDER
+TILE_SIZE = 4  # Tile size after resizing | 27 / 64 | 2, 3, ...
+TOLERANCE = 50  # 3, 50,  / Tolerance for grayscale differences (adjustable for stricter matches)
 
-TILE_FILES = sorted([f for f in os.listdir(TILE_FOLDER) if f.endswith(".png")])
-TILE_SIZE = 27  # Tile size after resizing | 27 / 64
-TOLERANCE = 3  # Tolerance for grayscale differences (adjustable for stricter matches)
 TEXT_HEIGHT = 30  # Space reserved for text above each tile
 SPACING = 200  # Space between tiles
 TEXT_OFFSET_Y = 10  # Additional vertical spacing for text
 TEXT_OFFSET_X = 10  # Additional horizontal spacing for text
 FONT_SIZE = 12  # Font size for better readability
+
+TILE_FILES = sorted([f for f in os.listdir(TILE_FOLDER) if f.endswith(".png")])
 
 # Determine grid size based on the number of images
 if len(TILE_FILES) <= 12:
