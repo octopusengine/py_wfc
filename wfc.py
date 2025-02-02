@@ -4,14 +4,18 @@ import yaml
 import os
 import datetime
 
-__version__ = "0.12"  # 25/02
+__version__ = "0.3.0"  # 25/02
 
-# Constants
-TILE_SIZE = 32  # Tile size in pixels | 16, 32, 64
-GRID_SIZE = 32  # Grid dimensions GRID_SIZE x GRID_SIZE | 8, 16, 32, 64, 128
+RULES_FILE = "rules3" # yaml
+TILE_FOLDER = "src3"
+TILE_SIZE = 27  # Tile size in pixels | 16, 32, 64 / 27, 54
+GRID_SIZE = 32  # Grid dimensions GRID_SIZE x GRID_SIZE | 8, 16, 32, 64, 128, 200
 WIDTH, HEIGHT = GRID_SIZE * TILE_SIZE, GRID_SIZE * TILE_SIZE
-DELAY = 10  # Delay in milliseconds (100ms)
-RULES_FILE = "rules2.yaml"
+BACKGROUND_COLOR = (250, 250, 250) #(50, 50, 50)
+if GRID_SIZE < 50:
+    DELAY = 10  # Delay in milliseconds (100ms)
+else:
+    DELAY = 1
 
 # Initialize Pygame
 pygame.init()
@@ -19,7 +23,6 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Wave Function Collapse")
 
 # Load tiles from the "src2/" folder
-TILE_FOLDER = "src2"
 TILE_NAMES = sorted([f for f in os.listdir(TILE_FOLDER) if f.endswith(".png")])
 
 # Debug: Verify the number of tiles
@@ -43,7 +46,8 @@ def load_connectivity(yaml_file):
     with open(yaml_file, "r") as file:
         return yaml.safe_load(file)
 
-CONNECTIVITY = load_connectivity(RULES_FILE)
+rules_path = os.path.join(TILE_FOLDER, RULES_FILE + ".yaml")
+CONNECTIVITY = load_connectivity(rules_path)
 
 # Initialize grid with all possible tiles
 grid = [[list(range(len(tiles))) for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
@@ -89,7 +93,7 @@ def update_constraints():
 # Function to draw the current state of the grid
 def draw_grid():
     """Draws the current state of the grid on the screen."""
-    screen.fill((50, 50, 50))  # Gray background
+    screen.fill(BACKGROUND_COLOR)  # Gray background
     for y in range(GRID_SIZE):
         for x in range(GRID_SIZE):
             if len(grid[y][x]) == 1:  # If the cell is collapsed

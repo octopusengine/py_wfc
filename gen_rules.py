@@ -5,54 +5,54 @@ import pygame
 from PIL import Image
 import time
 
-__version__ = "0.12" # 25/01
+__version__ = "0.3.0"  # 25/02
 
-RULES_FILE="rules2"
-TILE_FOLDER = "src2" # Directory containing tile images
+RULES_FILE = "rules3"
+TILE_FOLDER = "src3"  # Directory containing tile images
 
 TILE_FILES = sorted([f for f in os.listdir(TILE_FOLDER) if f.endswith(".png")])
-TILE_SIZE = 64  # Tile size after resizing
+TILE_SIZE = 27  # Tile size after resizing | 27 / 64
+TOLERANCE = 3  # Tolerance for grayscale differences (adjustable for stricter matches)
 TEXT_HEIGHT = 30  # Space reserved for text above each tile
 SPACING = 200  # Space between tiles
 TEXT_OFFSET_Y = 10  # Additional vertical spacing for text
 TEXT_OFFSET_X = 10  # Additional horizontal spacing for text
-FONT_SIZE = 12  # Increased font size for better readability
+FONT_SIZE = 12  # Font size for better readability
 
 # Determine grid size based on the number of images
 if len(TILE_FILES) <= 12:
-    GRID_ROWS, GRID_COLS = 5, 3
+    GRID_ROWS, GRID_COLS = 5, 5
 else:
-    GRID_ROWS, GRID_COLS = 6, 5
+    GRID_ROWS, GRID_COLS = 7, 8
 
 # Load and resize tile images
 tile_pixels = {}
 for i, file in enumerate(TILE_FILES):
-    img = Image.open(os.path.join(TILE_FOLDER, file)).convert("RGB")
-    img = img.resize((TILE_SIZE, TILE_SIZE))  # Resize to 64x64
-    tile_pixels[i] = np.array(img)
+    img = Image.open(os.path.join(TILE_FOLDER, file)).convert("L")  # Convert to grayscale
+    img = img.resize((TILE_SIZE, TILE_SIZE), Image.LANCZOS)  # Use LANCZOS instead of ANTIALIAS
+    tile_pixels[i] = np.array(img, dtype=np.uint8)  # Store as NumPy array
 
-# Function to get an edge signature of a tile
+# Function to get an exact pixel-by-pixel edge signature
 def get_edge_signature(tile_id, direction):
-    """Returns the average values of tile edges"""
+    """Returns the pixel values of the tile edges as a 1D NumPy array."""
     if direction == "top":
-        return np.mean(tile_pixels[tile_id][0, :, :], axis=0)
+        return tile_pixels[tile_id][0, :]  # First row
     elif direction == "bottom":
-        return np.mean(tile_pixels[tile_id][-1, :, :], axis=0)
+        return tile_pixels[tile_id][-1, :]  # Last row
     elif direction == "left":
-        return np.mean(tile_pixels[tile_id][:, 0, :], axis=0)
+        return tile_pixels[tile_id][:, 0]  # First column
     elif direction == "right":
-        return np.mean(tile_pixels[tile_id][:, -1, :], axis=0)
+        return tile_pixels[tile_id][:, -1]  # Last column
 
-# Function to compare edges with a tolerance value
-def is_similar(edge1, edge2, tolerance=15):
-    """Compares two edge signatures within a tolerance level"""
-    diff = np.abs(edge1 - edge2)
-    return np.all(diff <= tolerance)
+# Function to compare edges with pixel-level accuracy
+def is_similar(edge1, edge2, tolerance=TOLERANCE):
+    """Checks if two tile edges match pixel by pixel, allowing a small grayscale tolerance."""
+    return np.all(np.abs(edge1.astype(int) - edge2.astype(int)) <= tolerance)
 
 # Build connectivity rules for each tile
 CONNECTIVITY = {i: {"top": [], "bottom": [], "left": [], "right": []} for i in range(len(tile_pixels))}
 
-# Determine valid connections based on edge similarity
+# Determine valid connections based on pixel-accurate edge matching
 for tile1 in range(len(tile_pixels)):
     for tile2 in range(len(tile_pixels)):
         if is_similar(get_edge_signature(tile1, "top"), get_edge_signature(tile2, "bottom")):
@@ -64,9 +64,16 @@ for tile1 in range(len(tile_pixels)):
         if is_similar(get_edge_signature(tile1, "right"), get_edge_signature(tile2, "left")):
             CONNECTIVITY[tile1]["right"].append(tile2)
 
-# Save connectivity rules to a YAML file
-with open(RULES_FILE+".yaml", "w") as file:
+# Ensure the TILE_FOLDER directory exists
+os.makedirs(TILE_FOLDER, exist_ok=True)
+
+# Save connectivity rules inside TILE_FOLDER
+rules_path = os.path.join(TILE_FOLDER, RULES_FILE + ".yaml")
+with open(rules_path, "w") as file:
     yaml.dump(CONNECTIVITY, file, default_flow_style=False)
+
+print(f"Rules saved to: {rules_path}")
+
 
 # Initialize Pygame for visualization
 pygame.init()
@@ -90,7 +97,7 @@ for idx, file in enumerate(TILE_FILES[:GRID_ROWS * GRID_COLS]):
     # Load and resize tile image
     img = pygame.image.load(os.path.join(TILE_FOLDER, file))
     img = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE))
-    screen.blit(img, (x, y +60))
+    screen.blit(img, (x, y + 60))
 
     # Retrieve connectivity info
     conn = CONNECTIVITY[idx]
@@ -116,7 +123,7 @@ pygame.display.flip()
 time.sleep(5)
 
 # Save the visualization as an image
-pygame.image.save(screen, RULES_FILE+".png")
-print("Output saved as:", RULES_FILE+".png")
+pygame.image.save(screen, RULES_FILE + ".png")
+print("Output saved as:", RULES_FILE + ".png")
 
 pygame.quit()
