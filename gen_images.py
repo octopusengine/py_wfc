@@ -5,9 +5,9 @@ import numpy as np
 
 __version__ = "0.3.1"  # 25/02
 
-output_dir = "src_city"
-image_path = "city12.png"
-size = 6  # 3x3
+output_dir = "src_circle"
+image_path = "circle32.png"
+size = 8  # 3x3
 
 
 def split_image(image_path, size):

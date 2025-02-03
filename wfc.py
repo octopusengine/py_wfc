@@ -4,14 +4,15 @@ import yaml
 import os
 import datetime
 
-__version__ = "0.3.0"  # 25/02
+__version__ = "0.3.2"  # 25/02
 
-TILE_FOLDER = "src_city"
+TILE_FOLDER = "src3"
 RULES_FILE = TILE_FOLDER # yaml
-TILE_SIZE = 6  # Tile size in pixels | 16, 32, 64 / 27, 54
-GRID_SIZE = 128  # Grid dimensions GRID_SIZE x GRID_SIZE | 8, 16, 32, 64, 128, 200
+TILE_SIZE = 16  # Tile size in pixels | 16, 32, 64 / 27, 54
+GRID_SIZE = 64  # Grid dimensions GRID_SIZE x GRID_SIZE | 8, 16, 32, 64, 128, 200
+BACKGROUND_COLOR = (10, 10, 10) #(50, 50, 50)
+
 WIDTH, HEIGHT = GRID_SIZE * TILE_SIZE, GRID_SIZE * TILE_SIZE
-BACKGROUND_COLOR = (250, 250, 250) #(50, 50, 50)
 if GRID_SIZE < 32:
     DELAY = 10  # Delay in milliseconds (100ms)
 else:
@@ -122,20 +123,18 @@ def collapse_grid():
         draw_grid()
         pygame.time.delay(DELAY)
 
-"""
-# Txt Space Pattern
-for yy in range(GRID_SIZE-10):
-    preset(yy+5, int(GRID_SIZE/2+2), 0)
-for yy in range(GRID_SIZE-6):
-    preset(yy+3, int(GRID_SIZE/2+1), 0)
-for yy in range(GRID_SIZE):
-    preset(yy, int(GRID_SIZE/2), 0)
-for yy in range(GRID_SIZE-6):
-    preset(yy+3, int(GRID_SIZE/2-1), 0)
-for yy in range(GRID_SIZE-10):
-    preset(yy+5, int(GRID_SIZE/2-2), 0)
-
-"""
+def text_space():
+    # Txt Space Pattern
+    for yy in range(GRID_SIZE-10):
+        preset(yy+5, int(GRID_SIZE/2+2), 0)
+    for yy in range(GRID_SIZE-6):
+        preset(yy+3, int(GRID_SIZE/2+1), 0)
+    for yy in range(GRID_SIZE):
+        preset(yy, int(GRID_SIZE/2), 0)
+    for yy in range(GRID_SIZE-6):
+        preset(yy+3, int(GRID_SIZE/2-1), 0)
+    for yy in range(GRID_SIZE-10):
+        preset(yy+5, int(GRID_SIZE/2-2), 0)
 
     
 """
@@ -155,7 +154,7 @@ for yy in range(GRID_SIZE):
     preset(0, yy, 21)
 """
 
-
+# text_space()
 collapse_grid() # Run the collapse algorithm
 
 
